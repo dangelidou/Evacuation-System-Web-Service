@@ -2,8 +2,9 @@ package org.example.model;
 
 import lombok.Setter;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+
 import java.util.List;
 
 @Setter
@@ -22,8 +23,8 @@ public class Network {
         return edges;
     }
 
-    public void removeNode(int id) {
-        nodes.removeIf(node -> node.getId() == id);
+    public void removeNode(String id) {
+        nodes.removeIf(node -> node.getId().equals(id));
     }
 
     public void removeEdge(int id) {

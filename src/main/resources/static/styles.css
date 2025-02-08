@@ -1,0 +1,16 @@
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Center vertically */
+    align-items: center;    /* Center horizontally */
+    margin: 0;
+}
+
+h1 {
+    text-align: center;      /* Center the title text horizontally */
+}
+
+#shortestPaths {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}

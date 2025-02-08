@@ -8,28 +8,28 @@ import java.util.*;
 
 public class Dijkstra {
 
-    public Map<Integer, Double> findShortestPaths(Network network, int startId) {
+    public Map<String, Float> findShortestPaths(Network network, String startId) {
         // Convert Network into an adjacency list
-        Map<Integer, Map<Integer, Double>> adjacencyList = buildAdjacencyList(network);
+        Map<String, Map<String, Float>> adjacencyList = buildAdjacencyList(network);
 
         // Map to store minimum distances from the start node
-        Map<Integer, Double> distances = new HashMap<>();
-        Set<Integer> visited = new HashSet<>();
+        Map<String, Float> distances = new HashMap<>();
+        Set<String> visited = new HashSet<>();
 
         // PriorityQueue for maintaining the next node to visit
-        PriorityQueue<Map.Entry<Integer, Double>> priorityQueue =
+        PriorityQueue<Map.Entry<String, Float>> priorityQueue =
                 new PriorityQueue<>(Map.Entry.comparingByValue());
 
         // Initialize all distances to infinity
         for (Node node : network.getNodes()) {
-            distances.put(node.getId(), Double.MAX_VALUE);
+            distances.put(node.getId(), Float.MAX_VALUE);
         }
-        distances.put(startId, 0.0);
-        priorityQueue.offer(new AbstractMap.SimpleEntry<>(startId, 0.0));
+        distances.put(startId, 0.0F);
+        priorityQueue.offer(new AbstractMap.SimpleEntry<>(startId, 0.0f));
 
         // Process nodes
         while (!priorityQueue.isEmpty()) {
-            int currentNodeId = priorityQueue.poll().getKey();
+            String currentNodeId = priorityQueue.poll().getKey();
 
             // Skip if the node has already been visited
             if (visited.contains(currentNodeId)) {
@@ -38,11 +38,11 @@ public class Dijkstra {
             visited.add(currentNodeId);
 
             // Process all neighbors of the current node
-            Map<Integer, Double> neighbors = adjacencyList.getOrDefault(currentNodeId, Collections.emptyMap());
-            for (Map.Entry<Integer, Double> neighbor : neighbors.entrySet()) {
-                int neighborId = neighbor.getKey();
-                double weight = neighbor.getValue();
-                double newDist = distances.get(currentNodeId) + weight;
+            Map<String, Float> neighbors = adjacencyList.getOrDefault(currentNodeId, Collections.emptyMap());
+            for (Map.Entry<String, Float> neighbor : neighbors.entrySet()) {
+                String neighborId = neighbor.getKey();
+                float weight = neighbor.getValue();
+                float newDist = Math.round((distances.get(currentNodeId) + weight)*100f)/100f;
 
                 // Update minimum distance if needed
                 if (newDist < distances.get(neighborId)) {
@@ -61,14 +61,14 @@ public class Dijkstra {
         }
 
         // Find distances to the exit nodes
-        Map<Integer, Double> targetDistances = findTargetDistances(distances, exitNodes);
+        Map<String, Float> targetDistances = findTargetDistances(distances, exitNodes);
 
         // If there are no exits, look for the closest shelter
         if (targetDistances.isEmpty()) {
             // Keep the nodes that represent shelters in a list
             List<Node> shelterNodes = new ArrayList<>();
             for (Node node : network.getNodes()) {
-                if (node.isExit()) {
+                if (node.isShelter()) {
                     shelterNodes.add(node);
                 }
             }
@@ -78,8 +78,8 @@ public class Dijkstra {
         return findClosest(targetDistances);
     }
 
-    private Map<Integer, Map<Integer, Double>> buildAdjacencyList(Network network) {
-        Map<Integer, Map<Integer, Double>> adjacencyList = new HashMap<>();
+    private Map<String, Map<String, Float>> buildAdjacencyList(Network network) {
+        Map<String, Map<String, Float>> adjacencyList = new HashMap<>();
 
         for (Node node : network.getNodes()) {
             if (node.isCompromised()) network.removeNode(node.getId());
@@ -100,10 +100,10 @@ public class Dijkstra {
         return adjacencyList;
     }
 
-    private Map<Integer, Double> findTargetDistances(Map<Integer, Double> distances, List<Node> targetNodes) {
+    private Map<String, Float> findTargetDistances(Map<String, Float> distances, List<Node> targetNodes) {
 
         // Filter distances only for target nodes
-        Map<Integer, Double> targetDistances = new HashMap<>();
+        Map<String, Float> targetDistances = new HashMap<>();
         for (Node targetNode : targetNodes) {
             if (distances.containsKey(targetNode.getId())) {
                 targetDistances.put(targetNode.getId(), distances.get(targetNode.getId()));
@@ -112,10 +112,10 @@ public class Dijkstra {
         return targetDistances;
     }
 
-    private Map<Integer, Double> findClosest(Map<Integer, Double> distances) {
-        Map<Integer, Double> closest = new HashMap<>();
-        double minDistance = Double.MAX_VALUE;
-        for (Map.Entry<Integer, Double> entry : distances.entrySet()) {
+    private Map<String, Float> findClosest(Map<String, Float> distances) {
+        Map<String, Float> closest = new HashMap<>();
+        float minDistance = Float.MAX_VALUE;
+        for (Map.Entry<String, Float> entry : distances.entrySet()) {
             if (entry.getValue() < minDistance) {
                 minDistance = entry.getValue();
                 closest.clear();
