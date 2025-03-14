@@ -2,6 +2,8 @@ package org.example.model;
 
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlTransient;
+import lombok.Getter;
 import lombok.Setter;
 
 
@@ -12,7 +14,10 @@ public class Edge {
     private String label;
     private String from;
     private String to;
-    private float lengths;
+    private String lengthsRaw;
+    @Getter
+    @XmlTransient
+    private Float lengths;
     private boolean compromised;
 
     @XmlElement(name = "id")
@@ -35,9 +40,19 @@ public class Edge {
         return to;
     }
 
+
+    public String getLengthsRaw() {
+        return lengthsRaw;
+    }
+
     @XmlElement(name = "lengths")
-    public float getLengths() {
-        return lengths;
+    public void setLengthsRaw(String lengthsRaw) {
+        this.lengthsRaw = lengthsRaw;
+        try {
+            this.lengths = Float.parseFloat(lengthsRaw);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid length value: " + lengthsRaw);
+        }
     }
 
     @XmlElement(name = "compromised")

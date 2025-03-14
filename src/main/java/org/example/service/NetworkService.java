@@ -1,10 +1,13 @@
 package org.example.service;
 
+import jakarta.xml.bind.Unmarshaller;
+import org.example.model.Edge;
 import org.example.model.Network;
-import org.springframework.core.io.ClassPathResource;
+import org.example.model.Node;
 import org.springframework.stereotype.Service;
 
 import jakarta.xml.bind.JAXBContext;
+
 import java.io.InputStream;
 
 @Service
@@ -12,22 +15,17 @@ public class NetworkService {
     private final JAXBContext jaxbContext;
 
     public NetworkService() throws Exception {
-        this.jaxbContext = JAXBContext.newInstance(Network.class);
+        this.jaxbContext = JAXBContext.newInstance(Network.class, Node.class, Edge.class);
+
     }
 
-    public Network loadNetworkFromXML(String fileName) {
+    // Method to load the Network from a user-provided XML file (dynamic source)
+    public Network loadNetworkFromXML(InputStream inputStream) {
         try {
-            // Use Spring's ClassPathResource to read files from src/main/resources
-            ClassPathResource resource = new ClassPathResource(fileName);
-            InputStream inputStream = resource.getInputStream();
-
-            return (Network) jaxbContext.createUnmarshaller().unmarshal(inputStream);
-
-
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+            return (Network) unmarshaller.unmarshal(inputStream);
         } catch (Exception e) {
-            throw new RuntimeException("Error loading network from XML file: " + fileName, e);
+            throw new RuntimeException("Error loading network from XML input stream", e);
         }
     }
 }
-
-

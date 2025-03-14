@@ -1,10 +1,13 @@
 package org.example.model;
 
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Marshaller;
 import lombok.Setter;
 
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Setter
@@ -12,6 +15,11 @@ import java.util.List;
 public class Network {
     private List<Node> nodes;
     private List<Edge> edges;
+
+    public Network() {
+        this.nodes = new ArrayList<>();
+        this.edges = new ArrayList<>();
+    }
 
     @XmlElement(name = "node")
     public List<Node> getNodes() {
@@ -23,11 +31,4 @@ public class Network {
         return edges;
     }
 
-    public void removeNode(String id) {
-        nodes.removeIf(node -> node.getId().equals(id));
-    }
-
-    public void removeEdge(int id) {
-        edges.removeIf(edge -> edge.getId() == id);
-    }
 }

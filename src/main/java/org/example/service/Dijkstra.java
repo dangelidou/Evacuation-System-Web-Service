@@ -1,5 +1,6 @@
 package org.example.service;
 
+import com.github.javaparser.utils.Pair;
 import org.example.model.Network;
 import org.example.model.Node;
 import org.example.model.Edge;
@@ -8,14 +9,14 @@ import java.util.*;
 
 public class Dijkstra {
 
-    public Map<String, Float> findShortestPaths(Network network, String startId) {
+    public Map<String, Pair<List<String>, Float>> findShortestPaths(Network network, String startId) {
         // Convert Network into an adjacency list
         Map<String, Map<String, Float>> adjacencyList = buildAdjacencyList(network);
 
         // Map to store minimum distances from the start node
         Map<String, Float> distances = new HashMap<>();
         Set<String> visited = new HashSet<>();
-
+        Map<String,String> predecessors = new HashMap<>();
         // PriorityQueue for maintaining the next node to visit
         PriorityQueue<Map.Entry<String, Float>> priorityQueue =
                 new PriorityQueue<>(Map.Entry.comparingByValue());
@@ -47,6 +48,7 @@ public class Dijkstra {
                 // Update minimum distance if needed
                 if (newDist < distances.get(neighborId)) {
                     distances.put(neighborId, newDist);
+                    predecessors.put(neighborId, currentNodeId);
                     priorityQueue.offer(new AbstractMap.SimpleEntry<>(neighborId, newDist));
                 }
             }
@@ -74,31 +76,38 @@ public class Dijkstra {
             }
             targetDistances = findTargetDistances(distances, shelterNodes);
         }
-
-        return findClosest(targetDistances);
+        Map<String, Float> closestNodes = findClosest(targetDistances);
+        return reconstructPathsAndDistances(predecessors, closestNodes, distances);
     }
 
     private Map<String, Map<String, Float>> buildAdjacencyList(Network network) {
         Map<String, Map<String, Float>> adjacencyList = new HashMap<>();
 
+        // Collect IDs of compromised nodes
+        Set<String> compromisedNodes = new HashSet<>();
         for (Node node : network.getNodes()) {
-            if (node.isCompromised()) network.removeNode(node.getId());
-        }
-        // Populate the adjacency list
-        for (Edge edge : network.getEdges()) {
-            if (edge.isCompromised()) {
-                network.removeEdge(edge.getId());
-                continue;
+            if (node.isCompromised()) {
+                compromisedNodes.add(node.getId());
             }
+        }
 
+        // Populate the adjacency list excluding compromised edges and nodes
+        for (Edge edge : network.getEdges()) {
+            if (edge.isCompromised() || compromisedNodes.contains(edge.getFrom()) || compromisedNodes.contains(edge.getTo())) {
+                continue; // Skip this edge
+            }
+            System.out.println(edge.getFrom() + " -> " + edge.getTo() + "distance: " + edge.getLengths());
             adjacencyList
                     .computeIfAbsent(edge.getFrom(), k -> new HashMap<>())
                     .put(edge.getTo(), edge.getLengths());
-            adjacencyList.computeIfAbsent(edge.getTo(), k -> new HashMap<>()).put(edge.getFrom(), edge.getLengths());
+            adjacencyList
+                    .computeIfAbsent(edge.getTo(), k -> new HashMap<>())
+                    .put(edge.getFrom(), edge.getLengths());
         }
 
         return adjacencyList;
     }
+
 
     private Map<String, Float> findTargetDistances(Map<String, Float> distances, List<Node> targetNodes) {
 
@@ -126,5 +135,30 @@ public class Dijkstra {
         }
 
         return closest;
+    }
+
+    /**
+     * Reconstructs paths to target nodes and returns both paths and distances.
+     */
+    private Map<String, Pair<List<String>, Float>> reconstructPathsAndDistances(
+            Map<String, String> predecessors, Map<String, Float> closestNodes, Map<String, Float> distances) {
+
+        Map<String, Pair<List<String>, Float>> result = new HashMap<>();
+
+        for (String targetNode : closestNodes.keySet()) {
+            List<String> path = new ArrayList<>();
+            String currentNode = targetNode;
+
+            // Trace the path back to the start
+            while (currentNode != null) {
+                path.add(currentNode);
+                currentNode = predecessors.get(currentNode);
+            }
+
+            Collections.reverse(path); // Reverse to get the correct order
+            result.put(targetNode, new Pair<>(path, distances.get(targetNode))); // Store path and distance
+        }
+
+        return result;
     }
 }

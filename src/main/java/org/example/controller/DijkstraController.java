@@ -1,5 +1,6 @@
 package org.example.controller;
 
+import com.github.javaparser.utils.Pair;
 import org.example.model.Network;
 import org.example.model.Node;
 import org.example.service.Dijkstra;
@@ -7,9 +8,11 @@ import org.example.service.NetworkService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -23,23 +26,23 @@ public class DijkstraController {
         this.networkService = networkService;
     }
 
-    @PostMapping(value = "/default", produces = "application/json")
-    public ResponseEntity<Map<String,Map<String,Float>>> getShortestPathFromDefaultNetwork() {
+    @PostMapping(value = "/upload", produces = "application/json")
+    public ResponseEntity<Map<String, Map<String, Pair<List<String>, Float>>>> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
+//            Probably not needed?
+//            if (file.isEmpty()) {
+//                return ResponseEntity.status(500).body(
+//                        Map.of("error", Map.of())
+//                );
+//            }
 
-            // Use the service to load the Network object from the XML file
-            Network network = networkService.loadNetworkFromXML("network.xml");
-            if (network == null || network.getNodes() == null || network.getNodes().isEmpty()) {
-                return ResponseEntity.status(404).body(
-                        Map.of("error", Map.of())
-                );
-
-            }
+            // Load the Network object directly from the file input stream (no need for a temp file)
+            Network network = networkService.loadNetworkFromXML(file.getInputStream());
             // Run Dijkstra's algorithm
             Dijkstra dijkstra = new Dijkstra();
-            Map<String,Map<String,Float>> result = new HashMap<>();
+            Map<String, Map<String,Pair<List<String>,Float>>> result = new HashMap<>();
             for (Node node : network.getNodes()) {
-                Map<String, Float> shortestPaths = dijkstra.findShortestPaths(network, node.getId()); // Starting node
+                Map<String, Pair<List<String>, Float>> shortestPaths = dijkstra.findShortestPaths(network, node.getId()); // Starting node
                 if (shortestPaths == null || shortestPaths.isEmpty()) {
                     continue; // Skip nodes with no paths
                 }
