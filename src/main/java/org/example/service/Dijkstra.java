@@ -4,6 +4,7 @@ import com.github.javaparser.utils.Pair;
 import org.example.model.Network;
 import org.example.model.Node;
 import org.example.model.Edge;
+import java.lang.Math;
 
 import java.util.*;
 
@@ -11,21 +12,21 @@ public class Dijkstra {
 
     public Map<String, Pair<List<String>, Float>> findShortestPaths(Network network, String startId) {
         // Convert Network into an adjacency list
-        Map<String, Map<String, Float>> adjacencyList = buildAdjacencyList(network);
+        Map<String, Map<String, Edge>> adjacencyList = buildAdjacencyList(network);
 
-        // Map to store minimum distances from the start node
-        Map<String, Float> distances = new HashMap<>();
+        // Map to store minimum weights from the start node
+        Map<String, Float> weights = new HashMap<>();
         Set<String> visited = new HashSet<>();
         Map<String,String> predecessors = new HashMap<>();
         // PriorityQueue for maintaining the next node to visit
         PriorityQueue<Map.Entry<String, Float>> priorityQueue =
                 new PriorityQueue<>(Map.Entry.comparingByValue());
 
-        // Initialize all distances to infinity
+        // Initialize all weights to infinity
         for (Node node : network.getNodes()) {
-            distances.put(node.getId(), Float.MAX_VALUE);
+            weights.put(node.getId(), Float.MAX_VALUE);
         }
-        distances.put(startId, 0.0F);
+        weights.put(startId, 0.0F);
         priorityQueue.offer(new AbstractMap.SimpleEntry<>(startId, 0.0f));
 
         // Process nodes
@@ -39,17 +40,34 @@ public class Dijkstra {
             visited.add(currentNodeId);
 
             // Process all neighbors of the current node
-            Map<String, Float> neighbors = adjacencyList.getOrDefault(currentNodeId, Collections.emptyMap());
-            for (Map.Entry<String, Float> neighbor : neighbors.entrySet()) {
+            Map<String, Edge> neighbors = adjacencyList.getOrDefault(currentNodeId, Collections.emptyMap());
+            for (Map.Entry<String, Edge> neighbor : neighbors.entrySet()) {
                 String neighborId = neighbor.getKey();
-                float weight = neighbor.getValue();
-                float newDist = Math.round((distances.get(currentNodeId) + weight)*100f)/100f;
+                Edge edge = neighbor.getValue();
+                Node fromNode = network.getNodeById(currentNodeId);
+                Node neighborNode = network.getNodeById(neighborId);
+                int crowd = edge.getCrowd() + fromNode.getPeople(); // total crowd in the hallway
+                System.out.println("Crowd: " + crowd + " = edge: " + edge.getCrowd() + " + node: " + fromNode.getPeople() + " from node: " + currentNodeId + " to node: " + neighborId);
+                if (crowd > neighborNode.getCapacity() && !neighborNode.isExit()){
+                    System.out.println("Skipping edge from " + currentNodeId + " to " + neighborId + " due to crowd capacity. Crowd: " + crowd + ", Capacity: " + neighborNode.getCapacity());
+                    continue; // Skip this edge if the crowd exceeds capacity
+                }
+                // Calculate new speed based on crowd density
+                float density = crowd / (edge.getLengths() * edge.getWidths()); // density (People/m^2)
+                double newSpeed = edge.getSpeed()*(1-Math.exp(-1.913*(1/density - 1/5.4))); // Kladek formula
+                if (newSpeed < 0.1f) {
+                    newSpeed = 0.1;
+                }
+                System.out.println("New speed: " + newSpeed + ", Density: " + density);
+                float newTime = edge.getLengths()/((float) newSpeed);
+                System.out.println("New time: " + newTime + "= " + edge.getLengths() + "/" + newSpeed + " from node: " + currentNodeId + " to node: " + neighborId);
+                float newWeight = Math.round((weights.get(currentNodeId) + newTime)*100f)/100f;
 
-                // Update minimum distance if needed
-                if (newDist < distances.get(neighborId)) {
-                    distances.put(neighborId, newDist);
+                // Update minimum time if needed
+                if (newWeight < weights.get(neighborId)) {
+                    weights.put(neighborId, newWeight);
                     predecessors.put(neighborId, currentNodeId);
-                    priorityQueue.offer(new AbstractMap.SimpleEntry<>(neighborId, newDist));
+                    priorityQueue.offer(new AbstractMap.SimpleEntry<>(neighborId, newWeight));
                 }
             }
         }
@@ -62,11 +80,11 @@ public class Dijkstra {
             }
         }
 
-        // Find distances to the exit nodes
-        Map<String, Float> targetDistances = findTargetDistances(distances, exitNodes);
+        // Find weights to the exit nodes
+        Map<String, Float> targetWeights = findTargetWeights(weights, exitNodes);
 
         // If there are no exits, look for the closest shelter
-        if (targetDistances.isEmpty()) {
+        if (targetWeights.isEmpty()) {
             // Keep the nodes that represent shelters in a list
             List<Node> shelterNodes = new ArrayList<>();
             for (Node node : network.getNodes()) {
@@ -74,57 +92,61 @@ public class Dijkstra {
                     shelterNodes.add(node);
                 }
             }
-            targetDistances = findTargetDistances(distances, shelterNodes);
+            targetWeights = findTargetWeights(weights, shelterNodes);
         }
-        Map<String, Float> closestNodes = findClosest(targetDistances);
-        return reconstructPathsAndDistances(predecessors, closestNodes, distances);
+        Map<String, Float> closestNodes = findClosest(targetWeights);
+        return reconstructPathsAndWeights(predecessors, closestNodes, weights);
     }
 
-    private Map<String, Map<String, Float>> buildAdjacencyList(Network network) {
-        Map<String, Map<String, Float>> adjacencyList = new HashMap<>();
+    private Map<String, Map<String, Edge>> buildAdjacencyList(Network network) {
+        Map<String, Map<String, Edge>> adjacencyList = new HashMap<>();
 
         // Collect IDs of compromised nodes
         Set<String> compromisedNodes = new HashSet<>();
         for (Node node : network.getNodes()) {
             if (node.isCompromised()) {
+                System.out.println("Compromised node: " + node.getId());
                 compromisedNodes.add(node.getId());
             }
         }
 
         // Populate the adjacency list excluding compromised edges and nodes
         for (Edge edge : network.getEdges()) {
+
+            
             if (edge.isCompromised() || compromisedNodes.contains(edge.getFrom()) || compromisedNodes.contains(edge.getTo())) {
+                System.out.println("Compromised edge: " + edge.getFrom() + " to " + edge.getTo());
                 continue; // Skip this edge
             }
-            System.out.println(edge.getFrom() + " -> " + edge.getTo() + "distance: " + edge.getLengths());
+            
             adjacencyList
                     .computeIfAbsent(edge.getFrom(), k -> new HashMap<>())
-                    .put(edge.getTo(), edge.getLengths());
+                    .put(edge.getTo(), edge);
             adjacencyList
                     .computeIfAbsent(edge.getTo(), k -> new HashMap<>())
-                    .put(edge.getFrom(), edge.getLengths());
+                    .put(edge.getFrom(), edge);
         }
 
         return adjacencyList;
     }
 
 
-    private Map<String, Float> findTargetDistances(Map<String, Float> distances, List<Node> targetNodes) {
+    private Map<String, Float> findTargetWeights(Map<String, Float> weights, List<Node> targetNodes) {
 
-        // Filter distances only for target nodes
-        Map<String, Float> targetDistances = new HashMap<>();
+        // Filter weights only for target nodes
+        Map<String, Float> targetWeights = new HashMap<>();
         for (Node targetNode : targetNodes) {
-            if (distances.containsKey(targetNode.getId())) {
-                targetDistances.put(targetNode.getId(), distances.get(targetNode.getId()));
+            if (weights.containsKey(targetNode.getId())) {
+                targetWeights.put(targetNode.getId(), weights.get(targetNode.getId()));
             }
         }
-        return targetDistances;
+        return targetWeights;
     }
 
-    private Map<String, Float> findClosest(Map<String, Float> distances) {
+    private Map<String, Float> findClosest(Map<String, Float> weights) {
         Map<String, Float> closest = new HashMap<>();
         float minDistance = Float.MAX_VALUE;
-        for (Map.Entry<String, Float> entry : distances.entrySet()) {
+        for (Map.Entry<String, Float> entry : weights.entrySet()) {
             if (entry.getValue() < minDistance) {
                 minDistance = entry.getValue();
                 closest.clear();
@@ -138,27 +160,38 @@ public class Dijkstra {
     }
 
     /**
-     * Reconstructs paths to target nodes and returns both paths and distances.
+     * Reconstructs paths to target nodes and returns both paths and weights.
      */
-    private Map<String, Pair<List<String>, Float>> reconstructPathsAndDistances(
-            Map<String, String> predecessors, Map<String, Float> closestNodes, Map<String, Float> distances) {
+    private Map<String, Pair<List<String>, Float>> reconstructPathsAndWeights(
+            Map<String, String> predecessors, Map<String, Float> closestNodes, Map<String, Float> weights) {
 
         Map<String, Pair<List<String>, Float>> result = new HashMap<>();
 
         for (String targetNode : closestNodes.keySet()) {
-            List<String> path = new ArrayList<>();
+            // if (!predecessors.containsKey(targetNode)) {
+            //     continue; // Skip if the target node is not reachable
+            // }
+           
+            LinkedList<String> path = new LinkedList<>();
             String currentNode = targetNode;
-
+            // 
             // Trace the path back to the start
             while (currentNode != null) {
-                path.add(currentNode);
+                path.addFirst(currentNode);
                 currentNode = predecessors.get(currentNode);
             }
+            if (weights.get(targetNode) == Float.MAX_VALUE) {
 
-            Collections.reverse(path); // Reverse to get the correct order
-            result.put(targetNode, new Pair<>(path, distances.get(targetNode))); // Store path and distance
+                path.add("No path found");
+                result.put(targetNode, new Pair<>(path, Float.POSITIVE_INFINITY)); // Store path and time
+                
+            } else { 
+                result.put(targetNode, new Pair<>(path, weights.get(targetNode))); // Store path and time
+            }
         }
 
+            
+           
         return result;
     }
 }

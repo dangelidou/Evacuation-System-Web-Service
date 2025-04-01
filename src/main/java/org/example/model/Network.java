@@ -31,4 +31,14 @@ public class Network {
         return edges;
     }
 
+    public Node getNodeById(String id) {
+        for (Node node : nodes) {
+            if (node.getId().equals(id)) {
+                return node;
+            }
+        }
+        return null;
+    }
+
+    
 }

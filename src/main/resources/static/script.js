@@ -32,21 +32,24 @@ async function fetchAndDisplayShortestPaths(event) {
                         <tr>
                             <th>Source Node</th>
                             <th>Destination Node</th>
-                            <th>Distance</th>
+                            <th>Time</th>
                             <th>Path</th>
                         </tr>`;
 
         // Iterate over each source node
         for (const [sourceNode, destinationMap] of Object.entries(data)) {
             for (const [destinationNode, pathData] of Object.entries(destinationMap)) {
+                var path, distance;
+                
                 if (typeof pathData !== "object" || !Array.isArray(pathData.a) || !Number.isFinite(Number(pathData.b))) {
-                    console.error(`Invalid path data for ${sourceNode} → ${destinationNode}:`, pathData);
-                    continue; // Skip this entry
-                }
-                console.log(pathData.b);
-                const path = pathData.a.join(" → "); // Extract path
-                const distance = pathData.b.toFixed(2); // Extract distance
+                    path = "Path not found"; 
+                    distance = "N/A"; 
 
+                } else {
+                
+                    path = pathData.a.join(" → "); // Extract path
+                    distance = pathData.b.toFixed(2); // Extract distance
+                }
                 table += `<tr>
                             <td>${sourceNode}</td>
                             <td>${destinationNode}</td>

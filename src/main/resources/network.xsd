@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <!-- Defining Node elements' type -->
+  <xs:complexType name="nodeType">
+    <xs:all>
+      <xs:element type="xs:string" name="id"/>
+      <xs:element type="xs:string" name="label" minOccurs="0"/>
+      <xs:element type="xs:boolean" name="exit"/>
+      <xs:element name="temperature" minOccurs="0">
+        <xs:simpleType>
+          <xs:restriction base="xs:integer">
+            <xs:minInclusive value="1"/>
+            <xs:maxInclusive value="3"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="smoke" minOccurs="0">
+        <xs:simpleType>
+          <xs:restriction base="xs:integer">
+            <xs:minInclusive value="1"/>
+            <xs:maxInclusive value="3"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="co" minOccurs="0">
+        <xs:simpleType>
+          <xs:restriction base="xs:integer">
+            <xs:minInclusive value="1"/>
+            <xs:maxInclusive value="3"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="co2" minOccurs="0">
+        <xs:simpleType>
+          <xs:restriction base="xs:integer">
+            <xs:minInclusive value="1"/>
+            <xs:maxInclusive value="3"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element type="xs:boolean" name="flood" minOccurs="0"/>
+      <xs:element name="water" minOccurs="0">
+        <xs:simpleType>
+          <xs:restriction base="xs:integer">
+            <xs:minInclusive value="1"/>
+            <xs:maxInclusive value="3"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element type="xs:boolean" name="fire" minOccurs="0"/>
+      <xs:element type="xs:boolean" name="first_aid" minOccurs="0"/>
+      <xs:element type="xs:string" name="place" minOccurs="0"/>
+      <xs:element name="capacity" minOccurs="0">
+        <xs:simpleType>
+          <xs:restriction base="xs:integer">
+            <xs:minInclusive value="0"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="ventilation" minOccurs="0">
+        <xs:simpleType>
+          <xs:restriction base="xs:integer">
+            <xs:minInclusive value="1"/>
+            <xs:maxInclusive value="3"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element type="xs:boolean" name="shelter"/>
+      <xs:element name="people" minOccurs="0">
+      <xs:simpleType>
+        <xs:restriction base="xs:integer">
+          <xs:minInclusive value="0"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:element>
+    <xs:element type="xs:boolean" name="compromised"/>
+    </xs:all>
+  </xs:complexType>
+
+  <!-- Defining Edge elements' type -->
+  <xs:complexType name="edgeType">
+    <xs:all>
+      <xs:element type="xs:string" name="id"/>
+      <xs:element type="xs:string" name="label" minOccurs="0"/>
+      <xs:element type="xs:string" name="from"/>
+      <xs:element type="xs:string" name="to"/>
+      <xs:element name="lengths">
+        <xs:simpleType>
+          <xs:restriction base="xs:float">
+            <xs:minInclusive value="0"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element type="xs:boolean" name="disability" minOccurs="0"/>
+      <xs:element name="speed">
+        <xs:simpleType>
+          <xs:restriction base="xs:float">
+            <xs:minInclusive value="0"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="disability_speed" minOccurs="0">
+        <xs:simpleType>
+          <xs:restriction base="xs:float">
+            <xs:minInclusive value="0"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="widths">
+        <xs:simpleType>
+          <xs:restriction base="xs:float">
+            <xs:minInclusive value="0"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="temperature" minOccurs="0">
+        <xs:simpleType>
+          <xs:restriction base="xs:integer">
+            <xs:minInclusive value="1"/>
+            <xs:maxInclusive value="3"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="smoke" minOccurs="0">
+        <xs:simpleType>
+          <xs:restriction base="xs:integer">
+            <xs:minInclusive value="1"/>
+            <xs:maxInclusive value="3"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="co" minOccurs="0">
+        <xs:simpleType>
+          <xs:restriction base="xs:integer">
+            <xs:minInclusive value="1"/>
+            <xs:maxInclusive value="3"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="co2" minOccurs="0">
+        <xs:simpleType>
+          <xs:restriction base="xs:integer">
+            <xs:minInclusive value="1"/>
+            <xs:maxInclusive value="3"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element type="xs:boolean" name="flood" minOccurs="0"/>
+      <xs:element name="crowd">
+        <xs:simpleType>
+          <xs:restriction base="xs:integer">
+            <xs:minInclusive value="0"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element type="xs:boolean" name="compromised"/>
+    </xs:all>
+  </xs:complexType>
+
+  <!-- Defining Network element -->
+  <xs:complexType name="networkType">
+    <xs:sequence>
+      <xs:element type="nodeType" name="node" maxOccurs="unbounded" />
+      <xs:element type="edgeType" name="edge" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="network" type="networkType">
+    <!-- Unique key for node ID -->
+    <xs:key name="nodeIDKey">
+      <xs:selector xpath="node"/>
+      <xs:field xpath="id"/>
+    </xs:key>
+
+    <!-- Reference key: Edge 'from' must exist as a Node ID -->
+    <xs:keyref name="edgeFromRef" refer="nodeIDKey">
+      <xs:selector xpath="edge"/>
+      <xs:field xpath="from"/>
+    </xs:keyref>
+
+    <!-- Reference key: Edge 'to' must exist as a Node ID -->
+    <xs:keyref name="edgeToRef" refer="nodeIDKey">
+      <xs:selector xpath="edge"/>
+      <xs:field xpath="to"/>
+    </xs:keyref>
+  </xs:element>
+
+</xs:schema>
