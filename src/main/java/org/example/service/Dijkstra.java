@@ -75,7 +75,7 @@ public class Dijkstra {
         // Keep the nodes that represent exits in a list
         List<Node> exitNodes = new ArrayList<>();
         for (Node node : network.getNodes()) {
-            if (node.isExit()) {
+            if (node.isExit() && !node.isCompromised()) {
                 exitNodes.add(node);
             }
         }
@@ -88,7 +88,7 @@ public class Dijkstra {
             // Keep the nodes that represent shelters in a list
             List<Node> shelterNodes = new ArrayList<>();
             for (Node node : network.getNodes()) {
-                if (node.isShelter()) {
+                if (node.isShelter() && !node.isCompromised()) {
                     shelterNodes.add(node);
                 }
             }
