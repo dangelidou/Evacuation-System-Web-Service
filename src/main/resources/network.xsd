@@ -147,7 +147,7 @@
         </xs:simpleType>
       </xs:element>
       <xs:element type="xs:boolean" name="flood" minOccurs="0"/>
-      <xs:element name="crowd">
+      <xs:element name="crowd" minOccurs="0">
         <xs:simpleType>
           <xs:restriction base="xs:integer">
             <xs:minInclusive value="0"/>

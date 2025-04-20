@@ -22,6 +22,8 @@ public class Edge {
     private @XmlElement(name = "co2") int co2;
     private @XmlElement(name = "smoke") int smoke;
     private int crowd;
+    private boolean disability;
+    private float disabilitySpeed;
 
 
     @XmlElement(name = "id")
@@ -72,5 +74,18 @@ public class Edge {
     // Calculate time based on lengths and speed
     public float getTime() {
         return lengths / speed;
+    }
+
+    @XmlElement(name = "disability")
+    public boolean isAccessible() {
+        return disability;
+    }
+
+    @XmlElement(name = "disabilitySpeed")
+    public float getDisabilitySpeed() {
+        if (disabilitySpeed == 0) {
+            return 1.0f; // Default disability speed to 1 m/s if not set
+        }
+        return disabilitySpeed;
     }
 }

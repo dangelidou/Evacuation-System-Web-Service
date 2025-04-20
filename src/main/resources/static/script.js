@@ -27,42 +27,23 @@ async function fetchAndDisplayShortestPaths(event) {
             return;
         }
 
-        // Create an HTML table
-        let table = `<table border='1'>
-                        <tr>
-                            <th>Source Node</th>
-                            <th>Destination Node</th>
-                            <th>Time</th>
-                            <th>Path</th>
-                        </tr>`;
+        let pathsTable = buildPathsTable(data[0]);
+        document.getElementById("shortestPaths").innerHTML = pathsTable;
 
-        // Iterate over each source node
-        for (const [sourceNode, destinationMap] of Object.entries(data)) {
-            for (const [destinationNode, pathData] of Object.entries(destinationMap)) {
-                var path, distance;
-                
-                if (typeof pathData !== "object" || !Array.isArray(pathData.a) || !Number.isFinite(Number(pathData.b))) {
-                    path = "Path not found"; 
-                    distance = "N/A"; 
-
-                } else {
-                
-                    path = pathData.a.join(" → "); // Extract path
-                    distance = pathData.b.toFixed(2); // Extract distance
-                }
-                table += `<tr>
-                            <td>${sourceNode}</td>
-                            <td>${destinationNode}</td>
-                            <td>${distance}</td>
-                            <td>${path}</td>
-                          </tr>`;
-            }
+        let disabilitiesTableTitle = "<h2>Shortest Paths for individuals with Disabilities</h2>";
+        document.getElementById("shortestPathsDisabilityHeader").innerHTML = disabilitiesTableTitle;
+        
+        let disabilityPathsHtml;
+        if (Object.keys(data[1]).length === 0)
+            disabilityPathsHtml = "No data available for individuals with disabilities";
+        else {
+            let disabilityPathsTable = buildPathsTable(data[1]);
+            disabilityPathsHtml = disabilityPathsTable;
         }
 
-        table += "</table>";
-
-        // Display the results
-        document.getElementById("shortestPaths").innerHTML = table;
+        
+        
+        document.getElementById("shortestDisabilityPaths").innerHTML = disabilityPathsHtml;
 
     } catch (error) {
         console.error("Error while fetching shortest paths:", error);
@@ -70,5 +51,37 @@ async function fetchAndDisplayShortestPaths(event) {
     }
 }
 
+function buildPathsTable(shortestPaths) {
+    let table = `<table border='1'>
+                    <tr>
+                        <th>Source Node</th>
+                        <th>Destination Node</th>
+                        <th>Time</th>
+                        <th>Path</th>
+                    </tr>`;
+
+    for (const [sourceNode, destinationMap] of Object.entries(shortestPaths)) {
+        for (const [destinationNode, pathData] of Object.entries(destinationMap)) {
+            var path, distance;
+            
+            if (typeof pathData !== "object" || !Array.isArray(pathData.a) || !Number.isFinite(Number(pathData.b))) {
+                path = "Path not found"; 
+                distance = "N/A"; 
+            } else { 
+                path = pathData.a.join(" → "); // Extract path
+                distance = pathData.b.toFixed(2); // Extract distance
+            }
+            table += `<tr>
+                        <td>${sourceNode}</td>
+                        <td>${destinationNode}</td>
+                        <td>${distance}</td>
+                        <td>${path}</td>
+                      </tr>`;
+        }
+    }
+
+    table += "</table>";
+    return table;
+}
 // Attach event listener to the form submission
 document.getElementById("uploadForm").addEventListener("submit", fetchAndDisplayShortestPaths);

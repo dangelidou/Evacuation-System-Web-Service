@@ -28,34 +28,39 @@ public class DijkstraController {
     }
 
     @PostMapping(value = "/upload", produces = "application/json")
-    public ResponseEntity<Map<String, Map<String, Pair<List<String>, Float>>>> uploadFile(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<List<Map<String, Map<String, Pair<List<String>, Float>>>>> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
 
             // Load the Network object directly from the file input stream (no need for a temp file)
             Network network = networkService.loadNetworkFromXML(file.getInputStream());
             // Run Dijkstra's algorithm
             Dijkstra dijkstra = new Dijkstra();
-            Map<String, Map<String,Pair<List<String>,Float>>> result = new HashMap<>();
+            Map<String, Map<String,Pair<List<String>,Float>>> paths = new HashMap<>();
+            boolean hasDisabilityInfo = networkService.hasDisabilityInfo(file.getInputStream());
+            Map<String, Map<String,Pair<List<String>,Float>>> disabilityPaths = new HashMap<>();
+            
             for (Node node : network.getNodes()) {
-                Map<String, Pair<List<String>, Float>> shortestPaths = dijkstra.findShortestPaths(network, node.getId()); // Starting node
-                if (shortestPaths == null || shortestPaths.isEmpty()) {
-                    continue; // Skip nodes with no paths
+                Map<String, Pair<List<String>, Float>> shortestPaths = dijkstra.findShortestPaths(network, node.getId(), false);
+                paths.put(node.getId(), shortestPaths);
+                if (hasDisabilityInfo) {
+                    Map<String, Pair<List<String>, Float>> shortestPathsDisability = dijkstra.findShortestPaths(network, node.getId(), true);
+                    disabilityPaths.put(node.getId(), shortestPathsDisability);
                 }
-                result.put(node.getId(), shortestPaths);
             }
-
+            List<Map<String, Map<String, Pair<List<String>, Float>>>> result = List.of(paths, disabilityPaths);
+            // Return the result as a JSON response
             return ResponseEntity.ok(result);
         } catch (XMLValidationException e) {
             logger.error("XML validation error: {}", e.getMessage(), e);
             // throw new RuntimeException(e);
             return ResponseEntity.status(400).body(
-                Map.of("error", Map.of())
+                List.of(Map.of("error", Map.of("message", new Pair<>(List.of(), 0.0f))))
             );
         }
          catch (Exception e) {
             logger.error("Unexpected error: {}", e.getMessage(), e);
             return ResponseEntity.status(500).body(
-                Map.of("error", Map.of())
+                List.of(Map.of("error", Map.of("message", new Pair<>(List.of(), 0.0f))))
             );
          }
     }

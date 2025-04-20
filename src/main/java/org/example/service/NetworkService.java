@@ -8,6 +8,8 @@ import org.example.model.Network;
 import org.example.model.Node;
 
 import org.springframework.stereotype.Service;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
@@ -15,6 +17,9 @@ import jakarta.xml.bind.JAXBException;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -90,5 +95,17 @@ public class NetworkService {
             super(message, cause);
         }
     }
+
+    public boolean hasDisabilityInfo(InputStream inputStream) throws ParserConfigurationException, SAXException, IOException {
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+        Document doc = dBuilder.parse(inputStream);
+        doc.getDocumentElement().normalize();
+
+        // Check for <disability>
+        NodeList disabilityList = doc.getElementsByTagName("disability");
+        return (disabilityList.getLength() > 0);
+    }
+
 }
 
