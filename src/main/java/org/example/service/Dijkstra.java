@@ -115,7 +115,7 @@ public class Dijkstra {
 
         // Populate the adjacency list excluding compromised edges and nodes
         for (Edge edge : network.getEdges()) {
-
+            System.out.println(edge.isAccessible());
             
             if (edge.isCompromised() || compromisedNodes.contains(edge.getFrom()) || compromisedNodes.contains(edge.getTo())) {
                 // System.out.println("Compromised edge: " + edge.getFrom() + " to " + edge.getTo());
@@ -125,6 +125,7 @@ public class Dijkstra {
             if (disability) {
                 // Check if the edge is accessible for disabled people
                 if (!edge.isAccessible()) {
+                    System.out.println("Edge not accessible for disabled: " + edge.getFrom() + " to " + edge.getTo());
                     continue; // Skip this edge
                 }
             }

@@ -76,7 +76,13 @@ public class Edge {
         return lengths / speed;
     }
 
+    
+
     @XmlElement(name = "disability")
+    public boolean isDisability() {
+        return disability;
+    }
+
     public boolean isAccessible() {
         return disability;
     }

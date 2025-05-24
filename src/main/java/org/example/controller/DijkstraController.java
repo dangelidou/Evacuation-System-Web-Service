@@ -12,6 +12,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.example.service.NetworkService.XMLValidationException;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,12 +33,22 @@ public class DijkstraController {
     public ResponseEntity<List<Map<String, Map<String, Pair<List<String>, Float>>>>> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
 
-            // Load the Network object directly from the file input stream (no need for a temp file)
-            Network network = networkService.loadNetworkFromXML(file.getInputStream());
+            // Convert the InputStream into a reusable ByteArrayInputStream
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            file.getInputStream().transferTo(baos);
+            ByteArrayInputStream reusableStream = new ByteArrayInputStream(baos.toByteArray());
+
+            // Load the Network object from the reusable stream
+            Network network = networkService.loadNetworkFromXML(reusableStream);
+
+            // Reset the stream for the next use
+            reusableStream.reset();
+            
             // Run Dijkstra's algorithm
             Dijkstra dijkstra = new Dijkstra();
             Map<String, Map<String,Pair<List<String>,Float>>> paths = new HashMap<>();
-            boolean hasDisabilityInfo = networkService.hasDisabilityInfo(file.getInputStream());
+            boolean hasDisabilityInfo = networkService.hasDisabilityInfo(reusableStream);
+            reusableStream.reset();
             Map<String, Map<String,Pair<List<String>,Float>>> disabilityPaths = new HashMap<>();
             
             for (Node node : network.getNodes()) {
@@ -62,7 +74,7 @@ public class DijkstraController {
             return ResponseEntity.status(500).body(
                 List.of(Map.of("error", Map.of("message", new Pair<>(List.of(), 0.0f))))
             );
-         }
+        }
     }
 
 }
