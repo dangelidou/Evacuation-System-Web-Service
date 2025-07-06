@@ -20,11 +20,11 @@
             </plugin>
         </plugins>
 
-        <finalName>dijkstra</finalName>
+        <finalName>evacuation_system</finalName>
     </build>
 
     <groupId>org.example</groupId>
-    <artifactId>DijkstraWebService</artifactId>
+    <artifactId>EvacuationSystemWebService</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
