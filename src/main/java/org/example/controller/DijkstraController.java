@@ -60,6 +60,7 @@ public class DijkstraController {
                 }
             }
             List<Map<String, Map<String, Pair<List<String>, Float>>>> result = List.of(paths, disabilityPaths);
+
             // Return the result as a JSON response
             return ResponseEntity.ok(result);
         } catch (XMLValidationException e) {

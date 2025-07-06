@@ -61,7 +61,7 @@ public class Node {
 
     /* Returns true if the node is compromised, the room is flooded or on fire or one of 
      * the sensors are in a critical state (3).
-     * The sensors are: temperature, CO, CO2, smoke, water, ventilation.
+     * The sensors are (measure): temperature, CO, CO2, smoke, ventilation, water.
      */
     @XmlElement(name = "compromised")
     public boolean isCompromised() {

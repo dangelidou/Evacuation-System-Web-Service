@@ -108,7 +108,6 @@ public class Dijkstra {
         Set<String> compromisedNodes = new HashSet<>();
         for (Node node : network.getNodes()) {
             if (node.isCompromised()) {
-                // System.out.println("Compromised node: " + node.getId());
                 compromisedNodes.add(node.getId());
             }
         }
@@ -118,7 +117,6 @@ public class Dijkstra {
             System.out.println(edge.isAccessible());
             
             if (edge.isCompromised() || compromisedNodes.contains(edge.getFrom()) || compromisedNodes.contains(edge.getTo())) {
-                // System.out.println("Compromised edge: " + edge.getFrom() + " to " + edge.getTo());
                 continue; // Skip this edge
             }
             

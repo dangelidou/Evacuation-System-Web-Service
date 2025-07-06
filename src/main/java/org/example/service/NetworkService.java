@@ -41,6 +41,7 @@ public class NetworkService {
     // Method to load the Network from a user-provided XML file (dynamic source)
     public Network loadNetworkFromXML(InputStream inputStream) throws XMLValidationException {
         try {
+
              // Create a copy of the input stream since validation consumes it
              ByteArrayOutputStream baos = new ByteArrayOutputStream();
              inputStream.transferTo(baos);
@@ -48,6 +49,7 @@ public class NetworkService {
             if (!isValid(reusableStream)) {
                 throw new XMLValidationException("Invalid XML structure");
             }
+
             // Reset the stream for unmarshalling
             reusableStream.reset();
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
@@ -65,7 +67,6 @@ public class NetworkService {
             
              // Load XSD Schema
             SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            
             Schema schema = factory.newSchema(new StreamSource(getClass().getClassLoader().getResourceAsStream("network.xsd")));
             
 
@@ -85,12 +86,9 @@ public class NetworkService {
 
     // Custom exception class
     public class XMLValidationException extends Exception {
-    
-        
         public XMLValidationException(String message) {
             super(message);
         }
-
         public XMLValidationException(String message, Throwable cause) {
             super(message, cause);
         }

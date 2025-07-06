@@ -56,6 +56,10 @@ public class Edge {
         return speed;
     }
 
+    /* Returns true if the edge is compromised, the hallway is flooded or one of
+     * the sensors are in a critical state (3).
+     * The sensors are (measure): temperature, CO, CO2, smoke.
+     */
     @XmlElement(name = "compromised")
     public boolean isCompromised() {
         return compromised || flood || temperature == 3 || co == 3 || co2 == 3 || smoke == 3;
@@ -75,8 +79,6 @@ public class Edge {
     public float getTime() {
         return lengths / speed;
     }
-
-    
 
     @XmlElement(name = "disability")
     public boolean isDisability() {
