@@ -1,0 +1,1 @@
+An Intelligent Building Evacuation System that uses the Dijkstra algorithm in order to suggest the shortest paths to the available exits and shelters of a given building, based on the evacuees' speed and the current conditions of each room and hallway.
