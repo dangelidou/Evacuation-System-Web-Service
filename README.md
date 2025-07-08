@@ -11,9 +11,13 @@ Then you can run the service by running in the cmd/bash/PowerShell the command:
 ```
 java -jar path/to/evacuation_system.jar
 ```
-The project will then be available at the web address: 
+The project will then be available at the local address: 
 ```
 http://localhost:8080/dijkstra.html
+```
+To host the service on another server, you just have to move the .jar file to the server using any file transfer tool (e.g. WinSCP) or the terminal. Then you can run it using the same command stated above. The service will then be accessed through the address:
+```
+http://server-ip:8080/dijkstra.html
 ```
 
 ## Input Instructions
